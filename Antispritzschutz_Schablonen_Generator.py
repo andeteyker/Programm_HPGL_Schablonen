@@ -6,7 +6,7 @@ import PIL
 import openpyxl
 import sys
 from openpyxl import Workbook
-from datetime import datetime
+from datetime import date, datetime
 import Antispritzschutz_Script_Liner_4
 import Antispritzschutz_Script_Liner_5
 
@@ -120,7 +120,7 @@ def write_to_variable_modell_nr(entry):
 def write_to_variable_laenge_schuerze(entry):
     laenge_schuerzen[0] = entry.get()
 
-def liner5_program():
+def liner5_program(flag):
     for widget in window.winfo_children():
         widget.destroy()
     window.title("Dateneingabe Liner 5")
@@ -145,8 +145,10 @@ def liner5_program():
         ws.cell(row=num_rows, column=3).value = ",".join(str(x) for x in list_trennung_alu_NPL) #list_trennung_alu_NPL anstatt neue variable um add und delete funkrion nicht zu verändern
         ws.cell(row=num_rows, column=4).value = len(list_trennung_schuerze_NPL)
         ws.cell(row=num_rows, column=5).value = ",".join(str(x) for x in list_trennung_schuerze_NPL) #list_trennung_alu_NPL anstatt neue variable um add und delete funkrion nicht zu verändern
-        ws.cell(row=num_rows, column=6).value = laenge_schuerzen[0] #list_trennung_alu_NPL anstatt neue variable um add und delete funkrion nicht zu verändern
-        ws.cell(row=num_rows, column=7).value = datetime.now() #list_trennung_alu_NPL anstatt neue variable um add und delete funkrion nicht zu verändern
+        ws.cell(row=num_rows, column=6).value = laenge_schuerzen[0]
+        current_date = date.today()
+        formatted_date = current_date.strftime('%Y-%m-%d %H:%M:%S')
+        ws.cell(row=num_rows, column=7).value = str(formatted_date)#list_trennung_alu_NPL anstatt neue variable um add und delete funkrion nicht zu verändern
 
         
         wb.save(filepath)
@@ -178,9 +180,9 @@ def liner5_program():
 
     trennungen_label = tk.Label(window, text="Trennungen")
     trennungen_entry = tk.Entry(window)
-    trennungen_entry.bind("<Return>", lambda e: add_string(trennungen_entry,1,2))
-    add1_button = tk.Button(window, text="+", command=lambda: add_string(trennungen_entry,1,2))
-    delete1_button = tk.Button(window, text="-", command=lambda: delete_string(1,2))
+    trennungen_entry.bind("<Return>", lambda e: add_string(trennungen_entry,1,1))
+    add1_button = tk.Button(window, text="+", command=lambda: add_string(trennungen_entry,1,1))
+    delete1_button = tk.Button(window, text="-", command=lambda: delete_string(1,1))
     listbox1 = tk.Listbox(window, width=25, height=5)
 
     weiter_button = tk.Button(window, text="Weiter", command=weiter_button_func)
@@ -190,6 +192,29 @@ def liner5_program():
     listbox_arr = [listbox, listbox1]
 
     abstand_label.grid(row=0, column=3)
+    
+    if flag:
+        modell_nr_entry.insert("end", modell_nr)
+
+        if laenge_schuerzen[0]:
+            länge_entry.insert("end", laenge_schuerzen[0])
+
+        global list_arr_NPL
+
+        list_trennung_alu_NPL=[float(i) for i in flag[0] if i!="None"]
+        list_trennung_schuerze_NPL=[float(i) for i in flag[1] if i!="None"]
+
+        list_arr_NPL= [list_trennung_alu_NPL, list_trennung_schuerze_NPL]   
+
+        for item in list_arr_NPL[0]:  # Insert the sorted items into the listbox
+            if item!="None":
+                listbox_arr[0].insert("end", item)
+
+     
+        for item in list_arr_NPL[1]:  # Insert the sorted items into the listbox
+            if item!="None":
+                listbox_arr[1].insert("end", item)
+
 
     logo(2,1)
 
@@ -271,7 +296,9 @@ def liner4_program(flag):
         ws.cell(row=num_rows, column=21).value = ",".join(str(x) for x in list_trennung_alu_NPR)
         ws.cell(row=num_rows, column=22).value = float(angewinkelt_links.get())
         ws.cell(row=num_rows, column=23).value = float(angewinkelt_rechts.get())
-        ws.cell(row=num_rows, column=24).value = str(datetime.now())
+        current_date = date.today()
+        formatted_date = current_date.strftime('%Y-%m-%d %H:%M:%S')
+        ws.cell(row=num_rows, column=24).value = str(formatted_date)
 
 
         # Speichern Sie das Dokument
@@ -559,7 +586,7 @@ def menu():
     liner4_button = tk.Button(window, text="Programm Liner 4", command=lambda:liner4_program(0))
     liner4_button.config(height=2)
     liner4_button.grid(row=10, rowspan=3, column=3, columnspan=2, sticky='nsew', padx=5, pady=5)
-    liner5_button = tk.Button(window, text="Programm Liner 5", command=liner5_program)
+    liner5_button = tk.Button(window, text="Programm Liner 5", command=lambda:liner5_program(0))
     liner5_button.config(height=2)
     liner5_button.grid(row=13, rowspan= 3, column=3, columnspan=2, sticky='nsew', padx=5, pady=5)
     exit_button = tk.Button(window, text="Beenden", command=lambda:beenden())
@@ -588,7 +615,6 @@ def file_menu():
 def open_file():
     
     filepath = filedialog.askopenfile(filetypes=[('Excel-Dateien', '*.xlsx')], initialdir = script_dir)
-        
     window2=tk.Tk()
     window_width=400
     window_height=280
@@ -617,16 +643,18 @@ def open_file():
         query_entry.delete(0,END)
         query_entry.insert(0,str(selected_string[0]))
 
-
-
     wb = openpyxl.load_workbook(filepath.name)
-
-        # Machen Sie etwas mit der Excel-Datei (z.B. Werte in einer Zelle ändern)
+ # Machen Sie etwas mit der Excel-Datei (z.B. Werte in einer Zelle ändern)
     ws = wb[wb.sheetnames[0]]
-
     row_count = 0
     row_count2 = 1
-
+    
+    name=filepath.name.split("/")
+    if name[-1]== "Antispritzschutz_Daten_Liner_4.xlsx":
+        date=23
+    elif name[-1]== "Antispritzschutz_Daten_Liner_5.xlsx":
+        date=6
+        
     for rows in ws.rows:
         #print(rows)
         if row_count == 0:  # Skip the first row
@@ -634,10 +662,10 @@ def open_file():
             continue
         row_count2+=1
 
-        date_time_obj = datetime.strptime(str(rows[23].value), "%Y-%m-%d %H:%M:%S")
+        date_time_obj = datetime.strptime(str(rows[date].value), '%Y-%m-%d %H:%M:%S')
         date_obj = date_time_obj.date()
-
-        if row_count2%2==0:
+        
+        if row_count2<=len(list(ws.rows))/2+1:
             listbox.insert(END, str(rows[0].value) + '            ' + str(date_obj))
 
         else:
@@ -660,9 +688,16 @@ def open_file():
     listbox2.grid(row=3, column=3, rowspan=4, columnspan=2,sticky='nsew', padx=5, pady=5)
     zurück_button = tk.Button(window2, text="Zurück", command=lambda:window2.destroy())
     zurück_button.grid(row=7, column=1, columnspan=2, sticky='nsew', padx=5, pady=5)
+    
+    if date==23: 
+        weiter_l4_button = tk.Button(window2, text="Weiter", command=lambda:weiter_menu_liner_4(ws,query_entry,window,window2))
+        weiter_l4_button.grid(row=7, column=3, columnspan=2, sticky='nsew', padx=5, pady=5)
+       
+    else:
+        weiter_l5_button = tk.Button(window2, text="Weiter", command=lambda:weiter_menu_liner_5(ws,query_entry,window,window2))
+        weiter_l5_button.grid(row=7, column=3, columnspan=2, sticky='nsew', padx=5, pady=5)
+        
 
-    weiter_button = tk.Button(window2, text="Weiter", command=lambda:weiter_menu_liner_4(ws,query_entry,window,window2))
-    weiter_button.grid(row=7, column=3, columnspan=2, sticky='nsew', padx=5, pady=5)
 
 def weiter_menu_liner_4(ws,query,window,window2):
     # Get the string from the entry widget
@@ -678,7 +713,6 @@ def weiter_menu_liner_4(ws,query,window,window2):
             for cell in rows:
                 row.append(cell.value)
             break
-
 
     global modell_nr
     modell_nr = row[0]
@@ -697,13 +731,41 @@ def weiter_menu_liner_4(ws,query,window,window2):
     
     list_arr= [list_trennung_alu_NPL, list_rungen_NPL, list_trennung_schuerze_NPL, list_planspanner_NPL, list_trennung_alu_NPR, list_rungen_NPR, list_trennung_schuerze_NPR, list_planspanner_NPR]   
 
-
     for widget in window.winfo_children():
         widget.destroy()
     window2.destroy()
     liner4_program(list_arr)
 
+def weiter_menu_liner_5(ws,query,window,window2):
+    # Get the string from the entry widget
+    string=str(query.get())
+    row_count = 0
+    row=[]
+    for rows in ws.rows:
+    #print(rows)
+        if row_count == 0:  # Skip the first row
+            row_count += 1
+            continue
+        if rows[0].value==string:
+            for cell in rows:
+                row.append(cell.value)
+            break
+
+    global modell_nr
+    modell_nr = row[0]
+    if row[5]!=None:
+        laenge_schuerzen[0] = float(row[5])
+
+    list_trennung_alu_NPL, list_trennung_schuerze_NPL = [
+    str(rows[i].value).split(',') if str(rows[i].value) and not str(rows[i].value).isspace() else []
+    for i in [2, 4]]
     
+    list_arr= [list_trennung_alu_NPL, list_trennung_schuerze_NPL]   
+
+    for widget in window.winfo_children():
+        widget.destroy()
+    window2.destroy()
+    liner5_program(list_arr)
 
 def setup():
 
