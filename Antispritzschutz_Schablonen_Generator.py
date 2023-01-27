@@ -666,11 +666,14 @@ def open_file():
         date_obj = date_time_obj.date()
         
         if row_count2<=len(list(ws.rows))/2+1:
-            listbox.insert(END, str(rows[0].value) + '            ' + str(date_obj))
+            string = str(rows[0].value).ljust(20) + str(date_obj).rjust(20)
+            listbox.insert(END, string)
 
         else:
-            listbox2.insert(END, str(rows[0].value) + '            ' + str(date_obj))
+            # string = "{:<20}{:>20}".format(str(rows[0].value), str(date_obj))
+            string = str(rows[0].value).ljust(20) + str(date_obj).rjust(20)
 
+            listbox2.insert(END, string)
 
     suche_label = tk.Label(window2, text="Suche:")
     suche_label.config(height=2)
