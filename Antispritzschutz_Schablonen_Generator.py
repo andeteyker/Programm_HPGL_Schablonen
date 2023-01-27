@@ -1,3 +1,5 @@
+# Module einfügen
+
 import tkinter as tk
 from tkinter import END, StringVar, filedialog
 import os
@@ -11,23 +13,25 @@ import Antispritzschutz_Script_Liner_4
 import Antispritzschutz_Script_Liner_5
 
 
-# Create the main window
+# Erstellen vom main window
 window=tk.Tk()
 window_width=850
 window_height=600
 
+# Main Window in der mitte vom Bildschirm anzeigen lassen
 screen_width = window.winfo_screenwidth()
 screen_height = window.winfo_screenheight()
 x_coord = (screen_width/2) - (window_width/2)
 y_coord = (screen_height/2) - (window_height/2) -50
 window.geometry("+{}+{}".format(int(x_coord), int(y_coord)))
 
+# Main Window in 8 Spalten aufteilen um die Buttons und Eingabefelder an ein Raster anzupassen
 window.configure(highlightthickness=3, highlightbackground='black')
 for i in range(8):
     window.columnconfigure(i, weight=1, minsize=100)
 window.geometry(str(window_width) + "x" + str(window_height))
 
-
+# Arrays für die Positionen der Ausstanzungen
 list_trennung_alu_NPL = []
 list_rungen_NPL = []
 list_trennung_schuerze_NPL = []
@@ -46,8 +50,7 @@ angewinkelt_links = tk.IntVar()
 list_arr_NPL= [list_trennung_alu_NPL, list_rungen_NPL, list_trennung_schuerze_NPL, list_planspanner_NPL]   
 list_arr_NPR= [list_trennung_alu_NPR, list_rungen_NPR, list_trennung_schuerze_NPR, list_planspanner_NPR]   
 
-# Create a function to reset the window
-
+# Funktion um die Variablen zurückzusetzen und die Widgets vom Display zu löschen
 def reset_window():
     # Destroy all widgets in the window
     for widget in window.winfo_children():
@@ -64,12 +67,13 @@ def reset_window():
     laenge_schuerzen[:1]=["",""]
     window_side[:1] =[False,False]
     
+# Funktion um die Werte aus den Eingabefeldern den Arrays hinzuzufügen
 def add_string(entry,listbox_nr,list_nr):
     # Get the string from the entry widget
     string = entry.get()
     if string:
         if ((listbox_nr==0 or listbox_nr==1) and window_side[0]==False)or((listbox_nr==2 or listbox_nr==3) and window_side[1]==False):
-        # Convert the string to an integer and add it to the list
+            # Convert the string to an floating point number, sort the list and add it
             number = float(string)
             list_arr_NPL[list_nr].append(number)
             list_arr_NPL[list_nr].sort()  # Sort the list
@@ -88,7 +92,7 @@ def add_string(entry,listbox_nr,list_nr):
             entry.delete(0, 'end')  # Clear the entry widget
 
             
-
+# Funktion zur Löschng der Variablen in den Arrays und den Listboxen
 def delete_string(listbox_nr,list_nr):
     # Get the selected string
     selected_string = listbox_arr[listbox_nr].get("active")
@@ -108,23 +112,30 @@ def delete_string(listbox_nr,list_nr):
             listbox_arr[listbox_nr].delete(0, "end")  # Clear the listbox
             for item in list_arr_NPR[list_nr]:  # Insert the sorted items into the listbox
                 listbox_arr[listbox_nr].insert("end", item)
-
+                
+# Funktion um wieder ins Menü zu kommen
 def zurück_button_func():  
     reset_window()
     menu()
 
+# Funktion um die Variable modell_nr zu schreiben
 def write_to_variable_modell_nr(entry):
     global modell_nr
     modell_nr = entry.get()
-
+    
+# Funktion um die Variable laenge_schuerzen zu schreiben
 def write_to_variable_laenge_schuerze(entry):
     laenge_schuerzen[0] = entry.get()
 
+# Programm für die erstellung von Liner 5 Schürzen
 def liner5_program(flag):
+    # Widgets vom Fenster entfernen 
     for widget in window.winfo_children():
         widget.destroy()
+        
     window.title("Dateneingabe Liner 5")
 
+    # Funktion für der Weiterknopf des Liner 5 Programm
     def weiter_button_func():
         
     # Öffnen Sie den Datei-Explorer und speichern Sie den Pfad der ausgewählten Datei
@@ -135,11 +146,13 @@ def liner5_program(flag):
             # Machen Sie etwas mit der Excel-Datei (z.B. Werte in einer Zelle ändern)
         ws = wb[wb.sheetnames[0]]
 
+        # Sucht die Anzahl von Einträgen in der Excel liste 
         num_rows = 1
         for row in ws.rows:
             if any(cell.value for cell in row):
                 num_rows += 1
-
+                
+        # schreibt die Variablen in die letzte Zeile der Exceltabelle
         ws.cell(row=num_rows, column=1).value = modell_nr
         ws.cell(row=num_rows, column=2).value = len(list_trennung_alu_NPL)
         ws.cell(row=num_rows, column=3).value = ",".join(str(x) for x in list_trennung_alu_NPL) #list_trennung_alu_NPL anstatt neue variable um add und delete funkrion nicht zu verändern
@@ -150,13 +163,14 @@ def liner5_program(flag):
         formatted_date = current_date.strftime('%Y-%m-%d %H:%M:%S')
         ws.cell(row=num_rows, column=7).value = str(formatted_date)#list_trennung_alu_NPL anstatt neue variable um add und delete funkrion nicht zu verändern
 
-        
+        # speichert die Excel datei und gibt eine Info zur Bestätigung
         wb.save(filepath)
         Antispritzschutz_Script_Liner_5.upload_file(filepath)
         reset_window()
         menu()
         tk.messagebox.showinfo("Confirm", "Daten wurden gespeichert und Zeichnung wurde erstellt!")
 
+    # erstellung der Labels, Entrys, Listboxen und Buttons und die zordnung der Funktionen an die Widgets
     abstand_label = tk.Label(window)
     abstand_label.config(height=1)
     
@@ -188,11 +202,12 @@ def liner5_program(flag):
     weiter_button = tk.Button(window, text="Weiter", command=weiter_button_func)
     zurück_button = tk.Button(window, text="Zurück", command=zurück_button_func)
 
+
+    # erstellung des Arrays für die Listboxen
     global listbox_arr
     listbox_arr = [listbox, listbox1]
 
-    abstand_label.grid(row=0, column=3)
-    
+    # Eintragung der Werte eines ausgewählten Chassis in das Liner 5 Programm
     if flag:
         modell_nr_entry.insert("end", modell_nr)
 
@@ -206,16 +221,17 @@ def liner5_program(flag):
 
         list_arr_NPL= [list_trennung_alu_NPL, list_trennung_schuerze_NPL]   
 
-        for item in list_arr_NPL[0]:  # Insert the sorted items into the listbox
+        for item in list_arr_NPL[0]:  
             if item!="None":
                 listbox_arr[0].insert("end", item)
 
-     
-        for item in list_arr_NPL[1]:  # Insert the sorted items into the listbox
+        for item in list_arr_NPL[1]:  
             if item!="None":
                 listbox_arr[1].insert("end", item)
 
-
+    # Ausgabe der Widgets auf dem Fenster
+    abstand_label.grid(row=0, column=3)
+    
     logo(2,1)
 
     abstand1_label.grid(column=3,row=3)
@@ -243,36 +259,35 @@ def liner5_program(flag):
     file_menu()
 
 
-# Create an empty list to store the entered strings
 
-# Create a function to start the program and draw lines on the canvas
+
+# Funktion für das Liner 4 Programm
 def liner4_program(flag):
-    # Destroy the start button
+    # alte Widgets vom Fenster entfernen
     for widget in window.winfo_children():
         widget.destroy()
+        
     window.title("Dateneingabe Liner 4")
 
+    # Funktion zur weitergabe der Werte an die Exceltabelle und das Liner 4 Script
     def weiter_button_func():
 
         # Öffnen Sie den Datei-Explorer und speichern Sie den Pfad der ausgewählten Datei
-   
         filepath = filedialog.askopenfilename(filetypes=[('Excel-Dateien', '*.xlsx')], initialdir = script_dir)
+        
         # Öffnen Sie die ausgewählte Excel-Datei mit openpyxl
         wb = openpyxl.load_workbook(filepath)
 
         # Machen Sie etwas mit der Excel-Datei (z.B. Werte in einer Zelle ändern)
         ws = wb[wb.sheetnames[0]]
-        
-        # if abstand_alu_schuerze[1] and not abstand_alu_schuerze[0]:
-        #     laenge_schuerzen[0]=laenge_schuerzen[1]
-        # elif abstand_alu_schuerze[0] and not abstand_alu_schuerze[1]:
-        #     laenge_schuerzen[1]=laenge_schuerzen[0]
 
+        # Anzahl der Zeilen der Excel Tabelle zählen
         num_rows = 1
         for row in ws.rows:
             if any(cell.value for cell in row):
                 num_rows += 1
 
+        # Variablen in die Tabelle schreiben
         ws.cell(row=num_rows, column=1).value = modell_nr
         ws.cell(row=num_rows, column=2).value = laenge_schuerzen[0]
         ws.cell(row=num_rows, column=3).value = laenge_schuerzen[1]
@@ -308,6 +323,7 @@ def liner4_program(flag):
         menu()
         tk.messagebox.showinfo("Confirm", "Daten wurden gespeichert und Zeichnung wurde erstellt!")
 
+    # Funktion zur speicherung der Variabeln falls der Button für den Nullpunkt links aktiv ist
     def nullpunkt_links(x):
         button_arr[x+1].configure(bg="SystemButtonFace")
         button_arr[x].configure(bg="grey") 
@@ -342,6 +358,7 @@ def liner4_program(flag):
                 if item!="None":
                     listbox_arr[3].insert("end", item)    
 
+    # Funktion zur speicherung der Variabeln falls der Button für den Nullpunkt rechts aktiv ist
     def nullpunkt_rechts(x):
         button_arr[x].configure(bg="grey")
         button_arr[x-1].configure(bg="SystemButtonFace")
@@ -375,7 +392,8 @@ def liner4_program(flag):
             for item in list_arr_NPR[3]:  # Insert the sorted items into the listbox
                 if item!="None":
                     listbox_arr[3].insert("end", item) 
-
+    
+    # Funktion um die Variable abstand_alu_schuerze zu schreiben
     def write_to_variable_abstand_alu_schuerze(event):
         value = abstand_alu_schuerze_entry.get()
 
@@ -383,7 +401,8 @@ def liner4_program(flag):
             abstand_alu_schuerze[1]=value
         else:
             abstand_alu_schuerze[0]=value
-
+            
+    # Funktion um die Variable laenge_schuerzen zu schreiben
     def write_to_variable_laenge_schuerze(event):
         value = laenge_schuerze_entry.get()
     
@@ -392,7 +411,7 @@ def liner4_program(flag):
         else:
             laenge_schuerzen[0]=value
 
-    #widgets erstellen
+    # widgets erstellen und Funktionen anbinden
     aluleiste_label = tk.Label(window, text="Aluleiste")
     schuerze_label = tk.Label(window, text="Kunststoffschürze")
 
@@ -447,12 +466,12 @@ def liner4_program(flag):
     weiter_button = tk.Button(window, text="Weiter", command=weiter_button_func)
     zurück_button = tk.Button(window, text="Zurück", command=zurück_button_func)
 
-    #widgets in arrays ablegen
+    # widgets in arrays ablegen
     global listbox_arr
     listbox_arr = [listbox,listbox1,listbox2,listbox3]
     button_arr= [nullpunkt_links0_button,nullpunkt_rechts0_button,nullpunkt_links1_button,nullpunkt_rechts1_button]
     
-    
+    # Eintragung der Werte eines ausgewählten Chassis in das Liner 4 Programm
     if flag:
         modell_nr_entry.insert("end", modell_nr)
 
@@ -481,17 +500,14 @@ def liner4_program(flag):
             if item!="None":
                 listbox_arr[0].insert("end", item)
 
-     
         for item in list_arr_NPL[1]:  # Insert the sorted items into the listbox
             if item!="None":
                 listbox_arr[1].insert("end", item)
-
 
         for item in list_arr_NPL[2]:  # Insert the sorted items into the listbox
             if item!="None":
                 listbox_arr[2].insert("end", item)
 
-        
         for item in list_arr_NPL[3]:  # Insert the sorted items into the listbox
             if item!="None":
                 listbox_arr[3].insert("end", item) 
@@ -550,7 +566,7 @@ def liner4_program(flag):
     weiter_button.grid(row=14, column=4,columnspan=4, sticky='nsew', padx=5, pady=5)
     zurück_button.grid(row=14, column=0,columnspan=4, sticky='nsew', padx=5, pady=5)
     file_menu()
-
+# Funktion zur Anzeige des Krone Logos
 def logo(x,y):
     img_path = os.path.join(os.path.dirname(__file__), 'Bilder', 'Krone_Logo-removebg-preview.png')
     logo = Image.open(img_path)
@@ -560,9 +576,11 @@ def logo(x,y):
     logo_label.image=photo
     logo_label.grid(row=y, rowspan=2, column=1, columnspan=6, sticky='nsew')
 
+# Funktion zum beenden des Programms
 def beenden():
     window.destroy()
 
+# Funktion zur Anzeige des Menüs
 def menu():
 # Create a start button
     reset_window()
@@ -594,6 +612,7 @@ def menu():
     exit_button.grid(row=16, rowspan= 3, column=3, columnspan=2, sticky='nsew', padx=5, pady=5)
     file_menu()
 
+# Funktion für das File Menü
 def file_menu():
     
     menubar = tk.Menu(window)
@@ -604,16 +623,16 @@ def file_menu():
     menubar.add_cascade(label='Menü', menu=file_menu)
 
 # Add an Open option to the File menu
-
     file_menu.add_command(label='Datei öffnen', command=open_file)
     file_menu.add_command(label='Liner 4', command=lambda:liner4_program(0))
     file_menu.add_command(label='Liner 5', command=liner5_program)
     file_menu.add_command(label='Beenden', command=beenden)
 
 
-
+# Funktion zur Weitergabe des ausgesuchten Chassis
 def open_file():
     
+    # Exceltabelle auswählen und ein neues Fenster für das Auswählen der Chassis
     filepath = filedialog.askopenfile(filetypes=[('Excel-Dateien', '*.xlsx')], initialdir = script_dir)
     window2=tk.Tk()
     window_width=400
@@ -621,7 +640,7 @@ def open_file():
 
     window2.title("Dokument öffnen")
 
-
+    # Fenster in der Mitte des Bildschirms ausrichten und anzahl der Spalten auswählen
     screen_width = window2.winfo_screenwidth()
     screen_height = window2.winfo_screenheight()
     x_coord = (screen_width/2) - (window_width/2)
@@ -633,18 +652,20 @@ def open_file():
         window2.columnconfigure(i, weight=1)
     window2.geometry(str(window_width) + "x" + str(window_height))
 
+    # Widgets erstellen und Funtionen anfügen
     listbox = tk.Listbox(window2, width=25, height=7)
     listbox2 = tk.Listbox(window2, width=25, height=7)
     listbox.bind('<Button-1>',lambda e: anzeige(listbox))
     listbox2.bind('<Button-1>',lambda e: anzeige(listbox2))
 
+    # Funktion um das ausgewählte Chassi in der Suchzeile anzuzeigen
     def anzeige(listboxnr):
         selected_string = listboxnr.get("active").split(' ')
         query_entry.delete(0,END)
         query_entry.insert(0,str(selected_string[0]))
 
+    # Excel Tabelle öffnen und Werte vom ausgewählten Chassi kopieren
     wb = openpyxl.load_workbook(filepath.name)
- # Machen Sie etwas mit der Excel-Datei (z.B. Werte in einer Zelle ändern)
     ws = wb[wb.sheetnames[0]]
     row_count = 0
     row_count2 = 1
@@ -655,6 +676,7 @@ def open_file():
     elif name[-1]== "Antispritzschutz_Daten_Liner_5.xlsx":
         date=6
         
+    # kopierte Werte in die Listboxen einfügen
     for rows in ws.rows:
         #print(rows)
         if row_count == 0:  # Skip the first row
@@ -675,6 +697,7 @@ def open_file():
 
             listbox2.insert(END, string)
 
+    # Widgets anzeigen lassen
     suche_label = tk.Label(window2, text="Suche:")
     suche_label.config(height=2)
     suche_label.grid(row=0, column=1,sticky='sw', padx=5, pady=5)
@@ -701,7 +724,7 @@ def open_file():
         weiter_l5_button.grid(row=7, column=3, columnspan=2, sticky='nsew', padx=5, pady=5)
         
 
-
+# Funktion zur Weitergabe der Daten an das nächste Script
 def weiter_menu_liner_4(ws,query,window,window2):
     # Get the string from the entry widget
     string=str(query.get())
@@ -738,7 +761,8 @@ def weiter_menu_liner_4(ws,query,window,window2):
         widget.destroy()
     window2.destroy()
     liner4_program(list_arr)
-
+    
+# Funktion zur Weitergabe der Daten an das nächste Script
 def weiter_menu_liner_5(ws,query,window,window2):
     # Get the string from the entry widget
     string=str(query.get())
