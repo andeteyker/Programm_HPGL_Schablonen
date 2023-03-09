@@ -4,40 +4,68 @@ import tkinter
 from tkinter import filedialog
 import openpyxl
 
+#Überall wo die Stiftfarbe SP5 ausgewählt wurde, NICHT ändern. DIe Zeichnungen zeigen die Komplettansicht der Schürze
+
+#HPGL Commands: SP N    Stiftfabe auswählen
+#               PU      Pointer heben um neue Position anzufahren
+#               PA      Position anfahren
+#               PD      Pointer absetzen
+#               PR      Pointer relativ zur Position in X und Y Richtung bewegen
+
+#Zeichnung Planspanner
 
 def planspnr(file,x):
-    zplanspnr = "PU;\n" \
-        + "PA " + str(x) + ", 62.00;\n" \
+    zplanspnr = "SP2;\n"\
+        + "PU;\n" \
+        + "PA " + str(x) + ", 135.00;\n" \
         + "PD;\n" \
+        + "PR 0.00, 32.00;\n" \
+        + "PU;\n" \
         + "PR 100.00, 0.00;\n" \
-        + "PR 0.00, 39.00;\n" \
-        + "PR -100.00, 0.00;\n" \
-        + "PR 0.00, -39.00;\n" 
-    file.write(zplanspnr)
-    
-def runge(file,x):
-    zrunge = "PU;\n" \
-        + "PA " + str(x) + ", 103.00;\n" \
         + "PD;\n" \
-        + "PR 150.00, 0.00;\n" \
-        + "PR 0.00, 50.00;\n" \
-        + "PR -150.00, 0.00;\n" \
-        + "PR 0.00, -50.00;\n" 
-    file.write(zrunge)     
+        + "PR 0.00, -32.00;\n" 
+    file.write(zplanspnr)
+   
     
+#Zeichnung Rungen
+
+def runge(file,x):
+    zrunge = "SP1;\n"\
+        + "PU;\n" \
+        + "PA " + str(x) + ", 135.00;\n" \
+        + "PD;\n" \
+        + "PR 0.00, 32.00;\n" \
+        + "PU;\n" \
+        + "PR 150.00, 0.00;\n" \
+        + "PD;\n" \
+        + "PR 0.00, -32.00;\n" 
+    file.write(zrunge)     
+   
+    
+   
+#Zeichnung wo die Aluleisten getrennt werden
+ 
 def trennung_leiste(file,x):
-    ztrennung = "PU;\n" \
-            + "PA " + str(x) + ", 86.00;\n" \
-            + "PD;\n" \
-            + "PR 0.00, 44.00;\n"
+    ztrennung = "SP4;\n"\
+        + "PU;\n" \
+        + "PA " + str(x) + ", 111.00;\n" \
+        + "PD;\n" \
+        + "PR 0.00, 80.00;\n"
     file.write(ztrennung) 
+ 
+    
+#Zeichnung wo die Schürzen getrennt werden
 
 def trennung_schuerze(file,x):
-    ztrennung = "PU;\n" \
-            + "PA " + str(x) + ", 0.00;\n" \
-            + "PD;\n" \
-            + "PR 0.00, 86.00;\n" 
+    ztrennung = "SP3;\n"\
+        + "PU;\n" \
+        + "PA " + str(x) + ", 0.00;\n" \
+        + "PD;\n" \
+        + "PR 0.00, 101.00;\n" 
     file.write(ztrennung) 
+   
+
+#Zeichnung für einen Custom Ausschnitt (Wird im Menü nicht genutzt)
 
 def ausschnitt(file,x,y,l,h):
     zausschnitt = "PU;\n" \
@@ -62,45 +90,64 @@ def ausschnitt(file,x,y,l,h):
         + "PR 10.00, 0.00;\n" 
     file.write(zausschnitt)  
 
+#Zeichnung für die Position der Bohrung an der Alu Leiste
+
 def bohrung(file,x):
-    zbohrung = "PU;\n" \
-        + "PA " + str(x+9) + ", 117.40;\n" \
+    zbohrung = "SP4;\n"\
+        + "PU;\n" \
+        + "PA " + str(x+9) + ", 131.0;\n" \
         + "PD;\n" \
         + "PR 0.00, 7.00;\n" \
         + "PR 7.00, 0.00;\n" \
         + "PR 0.00, -7.00;\n" \
         + "PR -7.00, 0.00;\n" \
         + "PU;\n" \
-        + "PA " + str(x+158) + ", 117.40;\n" \
+        + "PA " + str(x+158) + ", 131.0;\n" \
         + "PD;\n" \
         + "PR 0.00, 7.00;\n" \
         + "PR 7.00, 0.00;\n" \
         + "PR 0.00, -7.00;\n" \
         + "PR -7.00, 0.00;\n" 
     file.write(zbohrung)
+  
+ 
+#Zeichnung für den Winkel an der linken Seite
 
 def winkel_L(file,x):
-    zwinkel_L = "PU;\n" \
+    zwinkel_L = "SP3;\n"\
+        + "PU;\n" \
         + "PA " + str(x) + ", 0.00;\n" \
         + "PD;\n" \
         + "PR 60.00, 100.90;\n" 
     file.write(zwinkel_L)
+ 
+  
+#Zeichnung für den Winkel an der rechten Seite
 
-def winkel_R(file,x):
-    zwinkel_R = "PU;\n" \
-        + "PA " + str(x) + ", 0.00;\n" \
+def winkel_R(file,x1,):
+    zwinkel_R = "SP3;\n"\
+        + "PU;\n" \
+        + "PA " + str(x1) + ", 0.00;\n" \
         + "PD;\n" \
         + "PR -60.00, 100.90;\n"
     file.write(zwinkel_R)
 
+    
+#Zeichnung für den Nullpunkt (WICHTIG)
+
 def nullpunkt(file):
-    nullpunkt = "SP1;\n" \
+    nullpunkt = "SP3;\n" \
         + "PU;\n" \
         + "PA 0.00, 0.00;\n" \
         + "PD;\n" \
         + "PR 1.00, 1.00;\n" 
     file.write(nullpunkt)
 
+ 
+
+
+
+#Funktion einzahl: die Funktion nimmt die durch die Parameter weitergegebene exceltabelle (row) und erstellt ein .plt Dokument und schreibt die einzelnen Positionsangaben in das Dokument.  
 def einzahl(row):
 
     #script_dir = os.path.dirname(os.path.realpath(sys.executable))
@@ -147,18 +194,30 @@ def einzahl(row):
         else:
             abstand=float(row[1])
                 
+        if int(row[21])==1:
+            if row[1]==None:
+                x=abstand-float(row[2])
+                winkel_L(file,x)
+            else:
+                winkel_L(file,0)
+                
+        if int(row[22])==1:
+                    winkel_R(file,abstand)      
+        
         if anzahl_trennungen_leiste_NPL>0:
             trennung_leiste(file,float(abstand_leiste_schuerze_NPL))
             bohrung(file,float(abstand_leiste_schuerze_NPL))
             for i in range(anzahl_trennungen_leiste_NPL):
-                pos_trennungen_leiste_npl[i]=float(pos_trennungen_leiste_npl[i])+abstand_leiste_schuerze_NPL
-                trennung_leiste(file,float(pos_trennungen_leiste_npl[i]))  
+                pos_trennungen_leiste_npl[i]=float(pos_trennungen_leiste_npl[i])+abstand_leiste_schuerze_NPL 
+               
+                trennung_leiste(file,float(pos_trennungen_leiste_npl[i]))
 
         if anzahl_trennungen_leiste_NPR>0:
             trennung_leiste(file,float(abstand-abstand_leiste_schuerze_NPR))
             bohrung(file,float(abstand-abstand_leiste_schuerze_NPR-175.0))
             for i in range(anzahl_trennungen_leiste_NPR):
                 pos_trennungen_leiste_npr[i] = abstand-float(pos_trennungen_leiste_npr[i])-abstand_leiste_schuerze_NPR
+             
                 trennung_leiste(file,float(pos_trennungen_leiste_npr[i]))
 
         if anzahl_trennungen_schuerze_NPL>0:
@@ -190,16 +249,10 @@ def einzahl(row):
                 planspnr(file,float(pos_planspanner_npr[i]))
             
 
-    
-        if int(row[21])==1:
-            if row[1]==None:
-                winkel_L(file,abstand-float(row[2])
-                )
-            else:
-                winkel_L(file,0)
+        
+        
 
-        if int(row[22])==1:
-            winkel_R(file,abstand)
+#Funktion PLT: öffnet das Excel Dokument und schreibt die einzelnen Zellen in die Variablen.     
 
 
 def PLT(file):
@@ -232,6 +285,7 @@ def PLT(file):
         else:
             break
             
+#öffnet ein dialogfenster wo du die Excleldatei auswählen kannst
 
 def upload_file(filepath):
     # Print the path of the selected file
@@ -260,8 +314,4 @@ def upload_file_manuell():
 
 if __name__ == "__main__":
     upload_file_manuell()
-    # user_input = input("Press Enter to continue or 'esc' to exit: ")
-    # if user_input == "esc":
-    #     sys.exit()
     sys.exit()
-#quit

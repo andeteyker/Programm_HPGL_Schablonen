@@ -4,6 +4,8 @@ from tkinter import filedialog
 import openpyxl
 import sys
 
+#Erklärung zu den begriffen bei Antispray_Script_Liner_4
+
 def nullpunkt(file):
     znullpunkt = "SP1;\n" \
         + "PU;\n" \

@@ -9,8 +9,8 @@ import openpyxl
 import sys
 from openpyxl import Workbook
 from datetime import date, datetime
-import Antispritzschutz_Script_Liner_4
-import Antispritzschutz_Script_Liner_5
+import Antispray_Script_Liner_4
+import Antispray_Script_Liner_5
 
 
 # Erstellen vom main window
@@ -32,6 +32,7 @@ for i in range(8):
 window.geometry(str(window_width) + "x" + str(window_height))
 
 # Arrays für die Positionen der Ausstanzungen
+
 list_trennung_alu_NPL = []
 list_rungen_NPL = []
 list_trennung_schuerze_NPL = []
@@ -76,6 +77,8 @@ def add_string(entry,listbox_nr,list_nr):
             # Convert the string to an floating point number, sort the list and add it
             number = float(string)
             list_arr_NPL[list_nr].append(number)
+            print(list_arr_NPL[list_nr])
+            print(list_planspanner_NPL)
             list_arr_NPL[list_nr].sort()  # Sort the list
             listbox_arr[listbox_nr].delete(0, "end")  # Clear the listbox
             for item in list_arr_NPL[list_nr]:  # Insert the sorted items into the listbox
@@ -127,6 +130,41 @@ def write_to_variable_modell_nr(entry):
 def write_to_variable_laenge_schuerze(entry):
     laenge_schuerzen[0] = entry.get()
 
+# Funktion für der Weiterknopf des Liner 5 Programm
+def weiter_button_func_l5():
+    
+# Öffnen Sie den Datei-Explorer und speichern Sie den Pfad der ausgewählten Datei
+    filepath = filedialog.askopenfilename(filetypes=[('Excel-Dateien', '*.xlsx')], initialdir = script_dir)
+        # Öffnen Sie die ausgewählte Excel-Datei mit openpyxl
+    wb = openpyxl.load_workbook(filepath)
+
+        # Machen Sie etwas mit der Excel-Datei (z.B. Werte in einer Zelle ändern)
+    ws = wb[wb.sheetnames[0]]
+
+    # Sucht die Anzahl von Einträgen in der Excel liste 
+    num_rows = 1
+    for row in ws.rows:
+        if any(cell.value for cell in row):
+            num_rows += 1
+            
+    # schreibt die Variablen in die letzte Zeile der Exceltabelle
+    ws.cell(row=num_rows, column=1).value = modell_nr
+    ws.cell(row=num_rows, column=2).value = len(list_trennung_alu_NPL)
+    ws.cell(row=num_rows, column=3).value = ",".join(str(x) for x in list_trennung_alu_NPL) #list_trennung_alu_NPL anstatt neue variable um add und delete funkrion nicht zu verändern
+    ws.cell(row=num_rows, column=4).value = len(list_trennung_schuerze_NPL)
+    ws.cell(row=num_rows, column=5).value = ",".join(str(x) for x in list_trennung_schuerze_NPL) #list_trennung_alu_NPL anstatt neue variable um add und delete funkrion nicht zu verändern
+    ws.cell(row=num_rows, column=6).value = laenge_schuerzen[0]
+    current_date = date.today()
+    formatted_date = current_date.strftime('%Y-%m-%d %H:%M:%S')
+    ws.cell(row=num_rows, column=7).value = str(formatted_date)#list_trennung_alu_NPL anstatt neue variable um add und delete funkrion nicht zu verändern
+
+    # speichert die Excel datei und gibt eine Info zur Bestätigung
+    wb.save(filepath)
+    Antispray_Script_Liner_5.upload_file(filepath)
+    reset_window()
+    menu()
+    tk.messagebox.showinfo("Confirm", "Daten wurden gespeichert und Zeichnung wurde erstellt!")
+    
 # Programm für die erstellung von Liner 5 Schürzen
 def liner5_program(flag):
     # Widgets vom Fenster entfernen 
@@ -135,40 +173,7 @@ def liner5_program(flag):
         
     window.title("Dateneingabe Liner 5")
 
-    # Funktion für der Weiterknopf des Liner 5 Programm
-    def weiter_button_func():
-        
-    # Öffnen Sie den Datei-Explorer und speichern Sie den Pfad der ausgewählten Datei
-        filepath = filedialog.askopenfilename(filetypes=[('Excel-Dateien', '*.xlsx')], initialdir = script_dir)
-            # Öffnen Sie die ausgewählte Excel-Datei mit openpyxl
-        wb = openpyxl.load_workbook(filepath)
-
-            # Machen Sie etwas mit der Excel-Datei (z.B. Werte in einer Zelle ändern)
-        ws = wb[wb.sheetnames[0]]
-
-        # Sucht die Anzahl von Einträgen in der Excel liste 
-        num_rows = 1
-        for row in ws.rows:
-            if any(cell.value for cell in row):
-                num_rows += 1
-                
-        # schreibt die Variablen in die letzte Zeile der Exceltabelle
-        ws.cell(row=num_rows, column=1).value = modell_nr
-        ws.cell(row=num_rows, column=2).value = len(list_trennung_alu_NPL)
-        ws.cell(row=num_rows, column=3).value = ",".join(str(x) for x in list_trennung_alu_NPL) #list_trennung_alu_NPL anstatt neue variable um add und delete funkrion nicht zu verändern
-        ws.cell(row=num_rows, column=4).value = len(list_trennung_schuerze_NPL)
-        ws.cell(row=num_rows, column=5).value = ",".join(str(x) for x in list_trennung_schuerze_NPL) #list_trennung_alu_NPL anstatt neue variable um add und delete funkrion nicht zu verändern
-        ws.cell(row=num_rows, column=6).value = laenge_schuerzen[0]
-        current_date = date.today()
-        formatted_date = current_date.strftime('%Y-%m-%d %H:%M:%S')
-        ws.cell(row=num_rows, column=7).value = str(formatted_date)#list_trennung_alu_NPL anstatt neue variable um add und delete funkrion nicht zu verändern
-
-        # speichert die Excel datei und gibt eine Info zur Bestätigung
-        wb.save(filepath)
-        Antispritzschutz_Script_Liner_5.upload_file(filepath)
-        reset_window()
-        menu()
-        tk.messagebox.showinfo("Confirm", "Daten wurden gespeichert und Zeichnung wurde erstellt!")
+    
 
     # erstellung der Labels, Entrys, Listboxen und Buttons und die zordnung der Funktionen an die Widgets
     abstand_label = tk.Label(window)
@@ -199,7 +204,7 @@ def liner5_program(flag):
     delete1_button = tk.Button(window, text="-", command=lambda: delete_string(1,1))
     listbox1 = tk.Listbox(window, width=25, height=5)
 
-    weiter_button = tk.Button(window, text="Weiter", command=weiter_button_func)
+    weiter_button = tk.Button(window, text="Weiter", command=weiter_button_func_l5)
     zurück_button = tk.Button(window, text="Zurück", command=zurück_button_func)
 
 
@@ -258,8 +263,66 @@ def liner5_program(flag):
     zurück_button.grid(row=14, column=0,columnspan=4, sticky='nsew', padx=5, pady=5)
     file_menu()
 
+# Funktion zur weitergabe der Werte an die Exceltabelle und das Liner 4 Script
+def weiter_button_func_l4():
+    global list_trennung_alu_NPL
+    global list_rungen_NPL
+    global list_trennung_schuerze_NPL
+    global list_planspanner_NPL
+    global list_trennung_alu_NPR
+    global list_rungen_NPR
+    global list_trennung_schuerze_NPR
+    global list_planspanner_NPR
+    # Öffnen Sie den Datei-Explorer und speichern Sie den Pfad der ausgewählten Datei
+    filepath = filedialog.askopenfilename(filetypes=[('Excel-Dateien', '*.xlsx')], initialdir = script_dir)
+    
+    # Öffnen Sie die ausgewählte Excel-Datei mit openpyxl
+    wb = openpyxl.load_workbook(filepath)
+
+    # Machen Sie etwas mit der Excel-Datei (z.B. Werte in einer Zelle ändern)
+    ws = wb[wb.sheetnames[0]]
+
+    # Anzahl der Zeilen der Excel Tabelle zählen
+    num_rows = 1
+    for row in ws.rows:
+        if any(cell.value for cell in row):
+            num_rows += 1
+
+    # Variablen in die Tabelle schreiben
+    ws.cell(row=num_rows, column=1).value = modell_nr
+    ws.cell(row=num_rows, column=2).value = laenge_schuerzen[0]
+    ws.cell(row=num_rows, column=3).value = laenge_schuerzen[1]
+    ws.cell(row=num_rows, column=8).value = len(list_rungen_NPL)
+    ws.cell(row=num_rows, column=9).value = ",".join(str(x) for x in list_rungen_NPL)
+    ws.cell(row=num_rows, column=10).value = len(list_rungen_NPR)
+    ws.cell(row=num_rows, column=11).value = ",".join(str(x) for x in list_rungen_NPR)
+    ws.cell(row=num_rows, column=4).value = len(list_planspanner_NPL)
+    ws.cell(row=num_rows, column=5).value = ",".join(str(x) for x in list_planspanner_NPL)
+    ws.cell(row=num_rows, column=6).value = len(list_planspanner_NPR)
+    ws.cell(row=num_rows, column=7).value = ",".join(str(x) for x in list_planspanner_NPR)
+    ws.cell(row=num_rows, column=12).value = abstand_alu_schuerze[0]
+    ws.cell(row=num_rows, column=13).value = abstand_alu_schuerze[1]
+    ws.cell(row=num_rows, column=14).value = len(list_trennung_schuerze_NPL)
+    ws.cell(row=num_rows, column=15).value = ",".join(str(x) for x in list_trennung_schuerze_NPL)
+    ws.cell(row=num_rows, column=16).value = len(list_trennung_schuerze_NPR)
+    ws.cell(row=num_rows, column=17).value = ",".join(str(x) for x in list_trennung_schuerze_NPR)
+    ws.cell(row=num_rows, column=18).value = len(list_trennung_alu_NPL)
+    ws.cell(row=num_rows, column=19).value = ",".join(str(x) for x in list_trennung_alu_NPL)
+    ws.cell(row=num_rows, column=20).value = len(list_trennung_alu_NPR)
+    ws.cell(row=num_rows, column=21).value = ",".join(str(x) for x in list_trennung_alu_NPR)
+    ws.cell(row=num_rows, column=22).value = float(angewinkelt_links.get())
+    ws.cell(row=num_rows, column=23).value = float(angewinkelt_rechts.get())
+    current_date = date.today()
+    formatted_date = current_date.strftime('%Y-%m-%d %H:%M:%S')
+    ws.cell(row=num_rows, column=24).value = str(formatted_date)
 
 
+    # Speichern Sie das Dokument
+    wb.save(filepath)
+    Antispray_Script_Liner_4.upload_file(filepath)
+    reset_window()
+    menu()
+    tk.messagebox.showinfo("Confirm", "Daten wurden gespeichert und Zeichnung wurde erstellt!")
 
 # Funktion für das Liner 4 Programm
 def liner4_program(flag):
@@ -269,62 +332,16 @@ def liner4_program(flag):
         
     window.title("Dateneingabe Liner 4")
 
-    # Funktion zur weitergabe der Werte an die Exceltabelle und das Liner 4 Script
-    def weiter_button_func():
-
-        # Öffnen Sie den Datei-Explorer und speichern Sie den Pfad der ausgewählten Datei
-        filepath = filedialog.askopenfilename(filetypes=[('Excel-Dateien', '*.xlsx')], initialdir = script_dir)
-        
-        # Öffnen Sie die ausgewählte Excel-Datei mit openpyxl
-        wb = openpyxl.load_workbook(filepath)
-
-        # Machen Sie etwas mit der Excel-Datei (z.B. Werte in einer Zelle ändern)
-        ws = wb[wb.sheetnames[0]]
-
-        # Anzahl der Zeilen der Excel Tabelle zählen
-        num_rows = 1
-        for row in ws.rows:
-            if any(cell.value for cell in row):
-                num_rows += 1
-
-        # Variablen in die Tabelle schreiben
-        ws.cell(row=num_rows, column=1).value = modell_nr
-        ws.cell(row=num_rows, column=2).value = laenge_schuerzen[0]
-        ws.cell(row=num_rows, column=3).value = laenge_schuerzen[1]
-        ws.cell(row=num_rows, column=4).value = len(list_planspanner_NPL)
-        ws.cell(row=num_rows, column=5).value = ",".join(str(x) for x in list_planspanner_NPL)
-        ws.cell(row=num_rows, column=6).value = len(list_planspanner_NPR)
-        ws.cell(row=num_rows, column=7).value = ",".join(str(x) for x in list_planspanner_NPR)
-        ws.cell(row=num_rows, column=8).value = len(list_rungen_NPL)
-        ws.cell(row=num_rows, column=9).value = ",".join(str(x) for x in list_rungen_NPL)
-        ws.cell(row=num_rows, column=10).value = len(list_rungen_NPR)
-        ws.cell(row=num_rows, column=11).value = ",".join(str(x) for x in list_rungen_NPR)
-        ws.cell(row=num_rows, column=12).value = abstand_alu_schuerze[0]
-        ws.cell(row=num_rows, column=13).value = abstand_alu_schuerze[1]
-        ws.cell(row=num_rows, column=14).value = len(list_trennung_schuerze_NPL)
-        ws.cell(row=num_rows, column=15).value = ",".join(str(x) for x in list_trennung_schuerze_NPL)
-        ws.cell(row=num_rows, column=16).value = len(list_trennung_schuerze_NPR)
-        ws.cell(row=num_rows, column=17).value = ",".join(str(x) for x in list_trennung_schuerze_NPR)
-        ws.cell(row=num_rows, column=18).value = len(list_trennung_alu_NPL)
-        ws.cell(row=num_rows, column=19).value = ",".join(str(x) for x in list_trennung_alu_NPL)
-        ws.cell(row=num_rows, column=20).value = len(list_trennung_alu_NPR)
-        ws.cell(row=num_rows, column=21).value = ",".join(str(x) for x in list_trennung_alu_NPR)
-        ws.cell(row=num_rows, column=22).value = float(angewinkelt_links.get())
-        ws.cell(row=num_rows, column=23).value = float(angewinkelt_rechts.get())
-        current_date = date.today()
-        formatted_date = current_date.strftime('%Y-%m-%d %H:%M:%S')
-        ws.cell(row=num_rows, column=24).value = str(formatted_date)
-
-
-        # Speichern Sie das Dokument
-        wb.save(filepath)
-        Antispritzschutz_Script_Liner_4.upload_file(filepath)
-        reset_window()
-        menu()
-        tk.messagebox.showinfo("Confirm", "Daten wurden gespeichert und Zeichnung wurde erstellt!")
-
+    
     # Funktion zur speicherung der Variabeln falls der Button für den Nullpunkt links aktiv ist
     def nullpunkt_links(x):
+        global list_trennung_alu_NPL
+        global list_rungen_NPL
+        global list_trennung_schuerze_NPL
+        global list_planspanner_NPL
+        global abstand_alu_schuerze
+        global laenge_schuerzen
+        
         button_arr[x+1].configure(bg="SystemButtonFace")
         button_arr[x].configure(bg="grey") 
         if x==0:
@@ -336,10 +353,10 @@ def liner4_program(flag):
             listbox_arr[0].delete(0, "end")  # Clear the listbox
             listbox_arr[1].delete(0, "end")  # Clear the listbox
 
-            for item in list_arr_NPL[0]:  # Insert the sorted items into the listbox
+            for item in list_trennung_alu_NPL:  # Insert the sorted items into the listbox
                 if item!="None":
                     listbox_arr[0].insert("end", item)
-            for item in list_arr_NPL[1]:  # Insert the sorted items into the listbox
+            for item in list_rungen_NPL:  # Insert the sorted items into the listbox
                 if item!="None":
                     listbox_arr[1].insert("end", item)
         else:
@@ -351,15 +368,23 @@ def liner4_program(flag):
             listbox_arr[2].delete(0, "end")  # Clear the listbox
             listbox_arr[3].delete(0, "end")  # Clear the listbox
 
-            for item in list_arr_NPL[2]:  # Insert the sorted items into the listbox
+            for item in list_trennung_schuerze_NPL:  # Insert the sorted items into the listbox
                 if item!="None":
                     listbox_arr[2].insert("end", item)
-            for item in list_arr_NPL[3]:  # Insert the sorted items into the listbox
+            for item in list_planspanner_NPL:  # Insert the sorted items into the listbox
                 if item!="None":
                     listbox_arr[3].insert("end", item)    
 
     # Funktion zur speicherung der Variabeln falls der Button für den Nullpunkt rechts aktiv ist
     def nullpunkt_rechts(x):
+
+        global list_trennung_alu_NPR
+        global list_rungen_NPR
+        global list_trennung_schuerze_NPR
+        global list_planspanner_NPR
+        global abstand_alu_schuerze
+        global laenge_schuerzen
+        
         button_arr[x].configure(bg="grey")
         button_arr[x-1].configure(bg="SystemButtonFace")
         if x==1:
@@ -371,10 +396,10 @@ def liner4_program(flag):
             listbox_arr[0].delete(0, "end")  # Clear the listbox
             listbox_arr[1].delete(0, "end")  # Clear the listbox
 
-            for item in list_arr_NPR[0]:  # Insert the sorted items into the listbox
+            for item in list_trennung_alu_NPR:  # Insert the sorted items into the listbox
                 if item!="None":
                     listbox_arr[0].insert("end", item)
-            for item in list_arr_NPR[1]:  # Insert the sorted items into the listbox
+            for item in list_rungen_NPR:  # Insert the sorted items into the listbox
                 if item!="None":
                     listbox_arr[1].insert("end", item)
         else:
@@ -386,17 +411,17 @@ def liner4_program(flag):
             listbox_arr[2].delete(0, "end")  # Clear the listbox
             listbox_arr[3].delete(0, "end")  # Clear the listbox
 
-            for item in list_arr_NPR[2]:  # Insert the sorted items into the listbox
+            for item in list_trennung_schuerze_NPR:  # Insert the sorted items into the listbox
                 if item!="None":
                     listbox_arr[2].insert("end", item)
-            for item in list_arr_NPR[3]:  # Insert the sorted items into the listbox
+            for item in list_planspanner_NPR:  # Insert the sorted items into the listbox
                 if item!="None":
                     listbox_arr[3].insert("end", item) 
     
     # Funktion um die Variable abstand_alu_schuerze zu schreiben
     def write_to_variable_abstand_alu_schuerze(event):
         value = abstand_alu_schuerze_entry.get()
-
+        global abstand_alu_schuerze
         if window_side[0]==True:
             abstand_alu_schuerze[1]=value
         else:
@@ -405,7 +430,7 @@ def liner4_program(flag):
     # Funktion um die Variable laenge_schuerzen zu schreiben
     def write_to_variable_laenge_schuerze(event):
         value = laenge_schuerze_entry.get()
-    
+        global laenge_schuerzen
         if window_side[1]==True:
             laenge_schuerzen[1]=value
         else:
@@ -463,7 +488,7 @@ def liner4_program(flag):
     delete3_button = tk.Button(window, text="-", command=lambda: delete_string(3,3))
     listbox3 = tk.Listbox(window, width=25, height=5)
 
-    weiter_button = tk.Button(window, text="Weiter", command=weiter_button_func)
+    weiter_button = tk.Button(window, text="Weiter", command=weiter_button_func_l4)
     zurück_button = tk.Button(window, text="Zurück", command=zurück_button_func)
 
     # widgets in arrays ablegen
@@ -472,17 +497,18 @@ def liner4_program(flag):
     button_arr= [nullpunkt_links0_button,nullpunkt_rechts0_button,nullpunkt_links1_button,nullpunkt_rechts1_button]
     
     # Eintragung der Werte eines ausgewählten Chassis in das Liner 4 Programm
-    if flag:
+    if flag!=0:
         modell_nr_entry.insert("end", modell_nr)
-
+        
+        global abstand_alu_schuerze
+        global laenge_schuerzen
+        
         if laenge_schuerzen[0]:
             laenge_schuerze_entry.insert("end", laenge_schuerzen[0])
 
         if abstand_alu_schuerze[0]:
             abstand_alu_schuerze_entry.insert("end", abstand_alu_schuerze[0])
 
-        global list_arr_NPL
-        global list_arr_NPR
 
         list_trennung_alu_NPL=[float(i) for i in flag[0] if i!="None"]
         list_rungen_NPL=[float(i) for i in flag[1] if i!="None"]
@@ -493,8 +519,15 @@ def liner4_program(flag):
         list_trennung_schuerze_NPR=[float(i) for i in flag[6] if i!="None"]
         list_planspanner_NPR=[float(i) for i in flag[7] if i!="None"]
 
+
+        global list_arr_NPL   
+        global list_arr_NPR
+        
         list_arr_NPL= [list_trennung_alu_NPL, list_rungen_NPL, list_trennung_schuerze_NPL, list_planspanner_NPL]   
         list_arr_NPR= [list_trennung_alu_NPR, list_rungen_NPR, list_trennung_schuerze_NPR, list_planspanner_NPR]   
+       
+
+
 
         for item in list_arr_NPL[0]:  # Insert the sorted items into the listbox
             if item!="None":
@@ -585,7 +618,7 @@ def menu():
 # Create a start button
     reset_window()
 
-    window.title("Antispritzschutz Schablonen Generator")
+    window.title("Antispray Schablonen Generator")
 
     menu_label = tk.Label(window)
     menu_label.config(height=4)
@@ -593,7 +626,7 @@ def menu():
 
     logo(2,2)
 
-    menu_label = tk.Label(window, text= "Programm zur automatischen Erstellung von Schablonen für die Antispritzschutzschürzen")
+    menu_label = tk.Label(window, text= "Programm zur automatischen Erstellung von Schablonen für die Antisprayschutzschürzen")
     menu_label.grid(row=4, column=1, columnspan=6, sticky='nsew')
     menu_label.config(font=("Helvetica", 10, "bold"),height=5)
 
@@ -671,9 +704,9 @@ def open_file():
     row_count2 = 1
     
     name=filepath.name.split("/")
-    if name[-1]== "Antispritzschutz_Daten_Liner_4.xlsx":
+    if name[-1]== "Antispray_Daten_Liner_4.xlsx":
         date=23
-    elif name[-1]== "Antispritzschutz_Daten_Liner_5.xlsx":
+    elif name[-1]== "Antispray_Daten_Liner_5.xlsx":
         date=6
         
     # kopierte Werte in die Listboxen einfügen
@@ -755,6 +788,8 @@ def weiter_menu_liner_4(ws,query,window,window2):
     str(rows[i].value).split(',') if str(rows[i].value) and not str(rows[i].value).isspace() else []
     for i in [4, 6, 8, 10, 14, 16, 18, 20]]
     
+  
+
     list_arr= [list_trennung_alu_NPL, list_rungen_NPL, list_trennung_schuerze_NPL, list_planspanner_NPL, list_trennung_alu_NPR, list_rungen_NPR, list_trennung_schuerze_NPR, list_planspanner_NPR]   
 
     for widget in window.winfo_children():
@@ -808,19 +843,19 @@ def setup():
     if not os.path.exists("Liner 5 Schürzen"):
         os.makedirs("Liner 5 Schürzen")
 
-    if not os.path.exists("Antispritzschutz_Daten_Liner_4.xlsx"):
+    if not os.path.exists("Antispray_Daten_Liner_4.xlsx"):
         wb1 = Workbook()
         ws1 = wb1.active
-        ws1.title = "Antispritzschutz_Daten_Liner_4"
+        ws1.title = "Antispray_Daten_Liner_4"
         ws1.append(["Modell Nr.", "Länge Schürze NPL", "Länge Schürze NPR", "Anzahl Planspanner NPL", "Pos. Planspanner NPL", "Anzahl Planspanner NPR", "Pos. Planspanner NPR", "Anzahl Rungen NPL", "Pos. Rungen NPL", "Anzahl Rungen NPR", "Pos. Rungen NPR", "Abstand Alu/Schürze NPL", "Abstand Alu/Schürze NPR", "Anzahl Trennungen Schürze NPL", "Pos. Trennungen Schürze NPL", "Anzahl Trennungen Schürze NPR", "Pos. Trennungen Schürze NPR", "Anzahl Trennungen Alu NPL", "Pos. Trennungen Alu NPL", "Anzahl Trennungen Alu NPR", "Pos. Trennungen Alu NPR", "Winkel Links", "Winkel Rechts","Erstellungsdatum"])
-        wb1.save(filename = "Antispritzschutz_Daten_Liner_4.xlsx")
+        wb1.save(filename = "Antispray_Daten_Liner_4.xlsx")
 
-    if not os.path.exists("Antispritzschutz_Daten_Liner_5.xlsx"):
+    if not os.path.exists("Antispray_Daten_Liner_5.xlsx"):
         wb2 = Workbook()
         ws2 = wb2.active
-        ws2.title = "Antispritzschutz_Daten_Liner_5"
+        ws2.title = "Antispray_Daten_Liner_5"
         ws2.append(["Modell Nr.", "Anzahl Halterungen", "Pos. Halterungen", "Anzahl Trennungen", "Pos. Trennungen", "Länge Schürze","Ertstellungsdatum"])
-        wb2.save(filename = "Antispritzschutz_Daten_Liner_5.xlsx")
+        wb2.save(filename = "Antispray_Daten_Liner_5.xlsx")
 
 
 if __name__ == "__main__":
